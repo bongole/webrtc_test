@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.webrtc.ecl.ntt.com/skyway-latest.js"></script>
+</head>
+<body>
+  <video id="my-video" width="400px" src="bigbunny2.mp4" loop muted autoplay playsinline controls></video>
+  <p id="my-id"></p>
+  <textarea id="their-id"></textarea>
+  <button id="make-call">発信</button>
+  <video id="their-video" width="400px" autoplay muted playsinline></video>
+  <script>
+     const peer = new Peer({
+       key: '8f4f58ac-ba7b-4ab6-bb0f-0e47e40c180f',
+       debug: 3
+     });
+
+     peer.on('open', () => {
+       document.getElementById('my-id').textContent = 'Peer ID: ' + peer.id;
+     });
+
+		// イベントリスナを設置する関数
+		const setEventListener = mediaConnection => {
+			mediaConnection.on('stream', stream => {
+				// video要素にカメラ映像をセットして再生
+				const videoElm = document.getElementById('their-video')
+				videoElm.srcObject = stream;
+				videoElm.play();
+			});
+		};
+
+    // 発信処理
+		document.getElementById('make-call').onclick = () => {
+			const theirID = document.getElementById('their-id').value;
+      const videoElm = document.getElementById('my-video');
+			const mediaConnection = peer.call(theirID, videoElm.captureStream());
+			setEventListener(mediaConnection);
+		};
+
+	//着信処理
+	peer.on('call', mediaConnection => {
+    console.log('answer')
+		mediaConnection.answer(localStream);
+		setEventListener(mediaConnection);
+	});
+     
+  peer.on('error', err => {
+        console.error(err.message);
+  });
+  </script>
+</body>
+</html>
